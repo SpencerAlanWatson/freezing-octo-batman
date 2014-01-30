@@ -1,0 +1,57 @@
+﻿@{
+    ViewBag.Title = "RiotTest";
+    Layout = "~/Views/Shared/_LayoutC.cshtml";
+}
+
+<h2>RiotTest</h2>
+<button class="btn btn-primary" type="button" onclick="TestData()">TestData!</button>
+
+<div id="Data">
+
+</div>
+
+@section scripts{
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+    <script>
+        var con;
+        var content;
+        google.load("visualization", "1", { packages: ["corechart"] });
+        google.load('visualization', '1', { packages: ['table'] });
+
+        function TestData() {
+            $.get("/Riot/TestData", function (data) {
+                con = data;
+                content = JSON.parse(data);
+                drawChart(content);
+                //console.log(data);
+            });
+        }
+        function drawChart(cData) {
+            $("#Data").empty();
+            var panel = $("<div class='panel panel-primary'>").appendTo('#Data');
+            var panelHeading = $("<div class='panel-heading'>").appendTo(panel);
+            var panelTitle = $("<h3 class='panel-title'>").appendTo(panelHeading);
+            panelTitle.text("Data-Stats");
+
+            var data = new google.visualization.DataTable();
+            var first = true;
+            $.each(cData.playerStatSummaries, function (index, value) {
+                var row = [];
+                if (first) {
+                    $.each(value.aggregatedStats, function (i, v) {
+                        data.addColumn(i == "playerStatSummaryType" ? 'string' : 'number', i);
+                    });
+                    first = false;
+                }
+                $.each(value.aggregatedStats, function (i, v) {
+                    row.push(v);
+                });
+                data.addRow(row);
+            });
+            var table = new google.visualization.Table($("<div class='table'>").appendTo(panel)[0]);
+            table.draw(data);
+            
+        }
+    </script>
+}
